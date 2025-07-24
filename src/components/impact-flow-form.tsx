@@ -212,17 +212,6 @@ export function ImpactFlowForm() {
       <form
         action={formAction}
         className="space-y-6"
-        onSubmit={form.handleSubmit((data) => {
-          const formData = new FormData();
-          Object.keys(data).forEach(key => {
-            if (key === 'conceptNote') {
-              formData.append(key, data[key][0]);
-            } else {
-              formData.append(key, (data as any)[key]);
-            }
-          });
-          formAction(formData);
-        })}
       >
         <Card className="shadow-lg">
           <CardHeader>
