@@ -80,26 +80,26 @@ export async function submitApplication(
 
   const data = validatedFields.data;
 
-  // Setup Nodemailer transporter
-  // IMPORTANT: You need to configure your email provider details.
-  // For development, you can use a service like Ethereal (https://ethereal.email/)
-  // For production, use a transactional email service (e.g., SendGrid, Mailgun) or your own SMTP server.
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com', // Replace with your SMTP host
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: 'your_email@gmail.com', // Replace with your email
-      pass: process.env.EMAIL_PASS, // Replace with your email password or app-specific password
-    },
-  });
-
-  const conceptNoteBuffer = Buffer.from(await data.conceptNote.arrayBuffer());
-
   try {
-    await transporter.sendMail({
-      from: `"Code for Impact" <your_email@gmail.com>`, // Replace with your sender name and email
-      to: 'info@masteryhub.co.rw',
+    // Create a test account for development
+    const testAccount = await nodemailer.createTestAccount();
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: testAccount.user, // generated ethereal user
+        pass: testAccount.pass, // generated ethereal password
+      },
+    });
+
+
+    const conceptNoteBuffer = Buffer.from(await data.conceptNote.arrayBuffer());
+
+    const info = await transporter.sendMail({
+      from: `"Code for Impact" <${testAccount.user}>`,
+      to: 'info@masteryhub.co.rw', // The recipient will be overridden by Ethereal
       subject: `New Project Application: ${data.projectName}`,
       html: `
         <h1>New Project Application</h1>
@@ -132,6 +132,12 @@ export async function submitApplication(
         },
       ],
     });
+
+    console.log('Message sent: %s', info.messageId);
+    // Preview only available when sending through an Ethereal account
+    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    // You can check the console on your server to see the preview URL.
+
 
     return {
       message: 'Application submitted successfully!',
