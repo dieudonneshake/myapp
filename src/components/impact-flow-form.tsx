@@ -60,10 +60,16 @@ const ACCEPTED_FILE_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ];
 
+const phoneRegex = new RegExp(
+  /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/
+);
+
+
 const formSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
   email: z.string().email('Invalid email address'),
-  phone: z.string().optional(),
+  countryCode: z.string().optional(),
+  phoneNumber: z.string().optional(),
   company: z.string().optional(),
   projectName: z.string().trim().min(1, 'Project Name is required'),
   sector: z.string().min(1, 'Please select a sector'),
@@ -100,6 +106,16 @@ const formSchema = z.object({
   terms: z.string().refine((val) => val === 'on', {
     message: 'You must agree to the terms and conditions.',
   }),
+}).refine(data => {
+    return !(data.phoneNumber && !data.countryCode);
+}, {
+    message: "Please select a country code",
+    path: ["countryCode"],
+}).refine(data => {
+    return !(data.countryCode && !data.phoneNumber);
+}, {
+    message: "Please enter a phone number",
+    path: ["phoneNumber"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -140,7 +156,8 @@ export function ImpactFlowForm() {
     defaultValues: {
       name: '',
       email: '',
-      phone: '',
+      countryCode: '',
+      phoneNumber: '',
       company: '',
       projectName: '',
       sector: '',
@@ -194,13 +211,25 @@ export function ImpactFlowForm() {
 
   const onSubmit = (data: FormValues) => {
     const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-        if (key === 'conceptNote') {
+    const { countryCode, phoneNumber, ...restOfData } = data;
+
+    // Combine country code and phone number
+    const fullPhoneNumber = (countryCode && phoneNumber) ? `${countryCode}${phoneNumber}` : '';
+
+    const submissionData: Record<string, any> = {
+      ...restOfData,
+      phone: fullPhoneNumber,
+    };
+
+
+    Object.entries(submissionData).forEach(([key, value]) => {
+        if (key === 'conceptNote' && value?.[0]) {
             formData.append(key, value[0]);
-        } else if (value !== undefined && value !== null) {
+        } else if (value !== undefined && value !== null && value !== '') {
             formData.append(key, value as string);
         }
     });
+
     startTransition(() => {
       formAction(formData);
     });
@@ -265,19 +294,47 @@ export function ImpactFlowForm() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+1 234 567 890" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="md:col-span-1">
+                <FormLabel>Phone Number</FormLabel>
+                <div className="flex gap-2 mt-2">
+                    <FormField
+                    control={form.control}
+                    name="countryCode"
+                    render={({ field }) => (
+                        <FormItem className="w-1/3">
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Code" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                               <SelectItem value="+250">RW (+250)</SelectItem>
+                               <SelectItem value="+1">US (+1)</SelectItem>
+                               <SelectItem value="+44">UK (+44)</SelectItem>
+                               <SelectItem value="+254">KE (+254)</SelectItem>
+                               <SelectItem value="+255">TZ (+255)</SelectItem>
+                               <SelectItem value="+256">UG (+256)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage/>
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                        <FormItem className="w-2/3">
+                        <FormControl>
+                            <Input placeholder="788 123 456" {...field} />
+                        </FormControl>
+                         <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+            </div>
             <FormField
               control={form.control}
               name="company"
@@ -440,7 +497,7 @@ export function ImpactFlowForm() {
                       I have read and understood the{" "}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                           <Button variant="link" type="button" className="p-0 h-auto text-base">Terms and Conditions</Button>
+                           <Button variant="link" type="button" className="p-0 h-auto text-base align-baseline">Terms and Conditions</Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
@@ -493,5 +550,3 @@ export function ImpactFlowForm() {
     </Form>
   );
 }
-
-    

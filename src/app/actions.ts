@@ -94,7 +94,7 @@ export async function submitApplication(
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT, 10),
-      secure: false, // Use false for port 587 with STARTTLS
+      secure: parseInt(process.env.SMTP_PORT, 10) === 465, // true for 465, false for other ports
       requireTLS: true,
       auth: {
         user: process.env.SMTP_USER,
