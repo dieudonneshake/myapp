@@ -153,20 +153,14 @@ export function ImpactFlowForm() {
       conceptNote: undefined,
       terms: false,
     },
-    // We will use the `state.errors` to set the form errors.
   });
-
-  // Keep a ref to the form to handle form data submission manually
-  const formRef = React.useRef<HTMLFormElement>(null);
 
   React.useEffect(() => {
     if (state.success) {
       setSubmitted(true);
       form.reset();
     } else if (state.message && !state.success) {
-      // Clear previous errors
       form.clearErrors();
-      // Set new errors from the server
       if (state.errors) {
         for (const [key, value] of Object.entries(state.errors)) {
           if (value && value.length > 0) {
@@ -176,12 +170,13 @@ export function ImpactFlowForm() {
             });
           }
         }
+      } else {
+        toast({
+            variant: 'destructive',
+            title: 'Submission Failed',
+            description: state.message,
+        });
       }
-      toast({
-        variant: 'destructive',
-        title: 'Submission Failed',
-        description: state.message,
-      });
     }
   }, [state, form, toast]);
 
@@ -209,15 +204,8 @@ export function ImpactFlowForm() {
   return (
     <Form {...form}>
       <form 
-        ref={formRef} 
         action={formAction} 
         className="space-y-6"
-        // This will trigger the action with the form data
-        onSubmit={form.handleSubmit(() => {
-          if(formRef.current) {
-            formAction(new FormData(formRef.current));
-          }
-        })}
       >
         <Card className="shadow-lg">
           <CardHeader>
@@ -412,7 +400,7 @@ export function ImpactFlowForm() {
             control={form.control}
             name="terms"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                 <FormControl>
                    <Checkbox
                     checked={field.value}
@@ -420,37 +408,40 @@ export function ImpactFlowForm() {
                     name={field.name}
                   />
                 </FormControl>
-                 <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="link" type="button" className="p-0 h-auto">View Terms and Conditions</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Terms and Conditions</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Please read these terms and conditions carefully before submitting your application.
-                          <br /><br />
-                          1. Eligibility: The competition is open to all individuals who are at least 18 years old.
-                          <br /><br />
-                          2. Submission: All submissions must be original work of the entrants.
-                          <br /><br />
-                          3. Judging: The projects will be judged by a panel of experts. The decision of the judges is final.
-                          <br /><br />
-                          By clicking "Accept" you agree to these terms and conditions.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => {
-                          form.setValue('terms', true, { shouldValidate: true });
-                        }}>Accept</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>
-                    I agree to the terms and conditions *
-                  </FormLabel>
+                  <div className="flex items-center gap-1">
+                     <FormLabel>
+                      I agree to the
+                    </FormLabel>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="link" type="button" className="p-0 h-auto text-base">terms and conditions</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Terms and Conditions</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Please read these terms and conditions carefully before submitting your application.
+                            <br /><br />
+                            1. Eligibility: The competition is open to all individuals who are at least 18 years old.
+                            <br /><br />
+                            2. Submission: All submissions must be original work of the entrants.
+                            <br /><br />
+                            3. Judging: The projects will be judged by a panel of experts. The decision of the judges is final.
+                            <br /><br />
+                            By clicking "Accept" you agree to these terms and conditions.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => {
+                            form.setValue('terms', true, { shouldValidate: true });
+                          }}>Accept</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    <FormLabel>*</FormLabel>
+                  </div>
                   <FormMessage/>
                 </div>
               </FormItem>
@@ -463,5 +454,3 @@ export function ImpactFlowForm() {
     </Form>
   );
 }
-
-    
