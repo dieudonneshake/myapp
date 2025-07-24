@@ -41,6 +41,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = [
@@ -355,20 +367,43 @@ export function ImpactFlowForm() {
             control={form.control}
             name="terms"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
+              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    className="hidden"
                   />
                 </FormControl>
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline">View Terms and Conditions</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Terms and Conditions</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Please read these terms and conditions carefully before submitting your application.
+                          <br /><br />
+                          1. Eligibility: The competition is open to all individuals who are at least 18 years old.
+                          <br /><br />
+                          2. Submission: All submissions must be original work of the entrants.
+                          <br /><br />
+                          3. Judging: The projects will be judged by a panel of experts. The decision of the judges is final.
+                          <br /><br />
+                          By clicking "Accept" you agree to these terms and conditions.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => field.onChange(true)}>Accept</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>
-                    I agree to the terms and conditions *
+                  <FormLabel className={field.value ? 'text-green-600' : ''}>
+                    {field.value ? 'You have agreed to the terms and conditions.' : 'You must agree to the terms and conditions *'}
                   </FormLabel>
-                  <FormDescription>
-                    By submitting this form, you agree to our privacy policy and terms of service.
-                  </FormDescription>
                   <FormMessage/>
                 </div>
               </FormItem>
