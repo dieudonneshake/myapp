@@ -130,7 +130,6 @@ function SubmitButton() {
 export function ImpactFlowForm() {
   const { toast } = useToast();
   const [submitted, setSubmitted] = React.useState(false);
-  const formRef = React.useRef<HTMLFormElement>(null);
   
   const [state, formAction] = useActionState(submitApplication, {
     message: '',
@@ -154,8 +153,11 @@ export function ImpactFlowForm() {
       conceptNote: undefined,
       terms: false,
     },
-    errors: state.errors,
+    // We will use the `state.errors` to set the form errors.
   });
+
+  // Keep a ref to the form to handle form data submission manually
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   React.useEffect(() => {
     if (state.success) {
@@ -206,7 +208,17 @@ export function ImpactFlowForm() {
 
   return (
     <Form {...form}>
-      <form ref={formRef} action={formAction} className="space-y-6">
+      <form 
+        ref={formRef} 
+        action={formAction} 
+        className="space-y-6"
+        // This will trigger the action with the form data
+        onSubmit={form.handleSubmit(() => {
+          if(formRef.current) {
+            formAction(new FormData(formRef.current));
+          }
+        })}
+      >
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="font-headline text-2xl flex items-center gap-2">
@@ -298,19 +310,21 @@ export function ImpactFlowForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Sector *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} name={field.name}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a sector" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="technology">Technology</SelectItem>
-                        <SelectItem value="agriculture">Agriculture</SelectItem>
-                        <SelectItem value="healthcare">Healthcare</SelectItem>
                         <SelectItem value="education">Education</SelectItem>
-                        <SelectItem value="finance">Finance</SelectItem>
-                        <SelectItem value="sustainability">Sustainability</SelectItem>
+                        <SelectItem value="health">Health</SelectItem>
+                        <SelectItem value="agriculture">Agriculture</SelectItem>
+                        <SelectItem value="governance">Governance</SelectItem>
+                        <SelectItem value="business">Business</SelectItem>
+                        <SelectItem value="technology_and_ai">Technology and AI</SelectItem>
+                        <SelectItem value="communication">Communication</SelectItem>
+                        <SelectItem value="transport">Transport</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
@@ -408,7 +422,7 @@ export function ImpactFlowForm() {
                 </FormControl>
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="link" type="button">View Terms and Conditions</Button>
+                      <Button variant="link" type="button" className="p-0 h-auto">View Terms and Conditions</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
@@ -449,3 +463,5 @@ export function ImpactFlowForm() {
     </Form>
   );
 }
+
+    
