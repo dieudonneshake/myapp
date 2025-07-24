@@ -307,6 +307,10 @@ const countryCodes = [
   { "value": "+263", "label": "Zimbabwe (+263)" }
 ]
 
+const uniqueCountryCodes = Array.from(new Set(countryCodes.map(c => c.label)))
+  .map(label => {
+    return countryCodes.find(c => c.label === label)!;
+  });
 
 const formSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
@@ -552,8 +556,8 @@ export function ImpactFlowForm() {
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                               {countryCodes.map((country, index) => (
-                                <SelectItem key={index} value={country.value}>
+                               {uniqueCountryCodes.map((country) => (
+                                <SelectItem key={country.label} value={country.value}>
                                     {country.label}
                                 </SelectItem>
                                ))}
