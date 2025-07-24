@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -128,7 +128,7 @@ export function ImpactFlowForm() {
   const { toast } = useToast();
   const [submitted, setSubmitted] = React.useState(false);
 
-  const [state, formAction] = useFormState(submitApplication, {
+  const [state, formAction] = useActionState(submitApplication, {
     message: '',
     success: false,
     errors: {},
@@ -470,5 +470,4 @@ export function ImpactFlowForm() {
       </form>
     </Form>
   );
-
-    
+}
