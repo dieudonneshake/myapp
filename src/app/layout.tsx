@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ImpactFlow',
+  title: 'Code for Impact',
   description: 'Application portal for impactful projects.',
 };
 
