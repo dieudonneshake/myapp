@@ -145,5 +145,3 @@ export async function submitApplication(
     };
   }
 }
-
-    
