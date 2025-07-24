@@ -97,9 +97,10 @@ export async function submitApplication(
 
     const conceptNoteBuffer = Buffer.from(await data.conceptNote.arrayBuffer());
 
-    const info = await transporter.sendMail({
+    // --- Email to Admin ---
+    const adminMailInfo = await transporter.sendMail({
       from: `"Code for Impact" <${testAccount.user}>`,
-      to: 'info@masteryhub.co.rw', // The recipient will be overridden by Ethereal
+      to: 'info@masteryhub.co.rw', // The recipient will be overridden by Ethereal for testing
       subject: `New Project Application: ${data.projectName}`,
       html: `
         <h1>New Project Application</h1>
@@ -133,10 +134,25 @@ export async function submitApplication(
       ],
     });
 
-    console.log('Message sent: %s', info.messageId);
-    // Preview only available when sending through an Ethereal account
-    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-    // You can check the console on your server to see the preview URL.
+    console.log('Admin notification sent: %s', adminMailInfo.messageId);
+    console.log('Preview URL for Admin Email: %s', nodemailer.getTestMessageUrl(adminMailInfo));
+
+    // --- Confirmation Email to Applicant ---
+    const confirmationMailInfo = await transporter.sendMail({
+      from: `"Code for Impact" <${testAccount.user}>`,
+      to: data.email, // Send to the person who filled out the form
+      subject: `Thank you for your submission to Code for Impact!`,
+      html: `
+        <h1>Thank You!</h1>
+        <p>Dear ${data.name},</p>
+        <p>Thank you for submitting your project, "${data.projectName}", to the Code for Impact competition.</p>
+        <p>We have successfully received your application and our team will review it shortly. We appreciate you taking the time to share your innovative idea with us.</p>
+        <p>Best regards,<br/>The Mastery Hub Team</p>
+      `,
+    });
+    
+    console.log('Confirmation email sent: %s', confirmationMailInfo.messageId);
+    console.log('Preview URL for Confirmation Email: %s', nodemailer.getTestMessageUrl(confirmationMailInfo));
 
 
     return {
