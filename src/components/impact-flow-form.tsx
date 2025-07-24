@@ -98,7 +98,7 @@ const formSchema = z.object({
             (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
             '.pdf, .doc, and .docx files are accepted.'
           ),
-  terms: z.boolean().refine((val) => val === true, {
+  terms: z.string().refine((val) => val === 'on', {
     message: 'You must agree to the terms and conditions.',
   }),
 });
@@ -137,7 +137,7 @@ export function ImpactFlowForm() {
     errors: {},
   });
 
-  const form = useForm<FormValues>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
@@ -151,7 +151,7 @@ export function ImpactFlowForm() {
       differentiation: '',
       innovation: '',
       conceptNote: undefined,
-      terms: false,
+      terms: undefined,
     },
   });
 
@@ -408,8 +408,10 @@ export function ImpactFlowForm() {
               <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                 <FormControl>
                    <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
+                    checked={field.value === 'on'}
+                    onCheckedChange={(checked) => {
+                      return field.onChange(checked ? 'on' : 'off');
+                    }}
                     name={field.name}
                   />
                 </FormControl>
@@ -440,7 +442,7 @@ export function ImpactFlowForm() {
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction onClick={() => {
-                            form.setValue('terms', true, { shouldValidate: true });
+                            form.setValue('terms', 'on', { shouldValidate: true });
                           }}>Accept</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

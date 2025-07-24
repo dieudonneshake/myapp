@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -35,7 +36,7 @@ const formSchema = z.object({
       (file) => ACCEPTED_FILE_TYPES.includes(file.type),
       '.pdf, .doc, and .docx files are accepted.'
     ),
-  terms: z.string().refine((val) => val === 'true', {
+  terms: z.string().refine((val) => val === 'on', {
     message: 'You must agree to the terms and conditions.',
   }),
 });
@@ -144,3 +145,5 @@ export async function submitApplication(
     };
   }
 }
+
+    
