@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -305,12 +304,13 @@ const countryCodes = [
   { "value": "+967", "label": "Yemen (+967)" },
   { "value": "+260", "label": "Zambia (+260)" },
   { "value": "+263", "label": "Zimbabwe (+263)" }
-]
+];
 
 const uniqueCountryCodes = Array.from(new Set(countryCodes.map(c => c.label)))
   .map(label => {
     return countryCodes.find(c => c.label === label)!;
   });
+
 
 const formSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
@@ -781,7 +781,7 @@ export function ImpactFlowForm() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
-                      . I have read and understood the Terms and Conditions. I agree to allow Mastery Hub of Rwanda to process and evaluate my submission under the above guidelines. I understand that while all reasonable efforts will be made to protect my intellectual property, full protection cannot be guaranteed, and I am responsible for registering sensitive projects with RDB before submitting. *
+                      . "I have read and understood the Terms and Conditions. I agree to allow Mastery Hub of Rwanda to process and evaluate my submission under the above guidelines. I understand that while all reasonable efforts will be made to protect my intellectual property, full protection cannot be guaranteed, and I am responsible for registering sensitive projects with RDB before submitting." *
                     </FormLabel>
                   </div>
                   <FormMessage/>
