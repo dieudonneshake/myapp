@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useActionState } from 'react';
+import { useActionState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -127,6 +127,7 @@ function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
 export function ImpactFlowForm() {
   const { toast } = useToast();
   const [submitted, setSubmitted] = React.useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const [state, formAction] = useActionState(submitApplication, {
     message: '',
@@ -200,7 +201,9 @@ export function ImpactFlowForm() {
             formData.append(key, value as string);
         }
     });
-    formAction(formData);
+    startTransition(() => {
+      formAction(formData);
+    });
   };
 
 
@@ -465,9 +468,11 @@ export function ImpactFlowForm() {
             )}
           />
 
-          <SubmitButton isSubmitting={isSubmitting} />
+          <SubmitButton isSubmitting={isSubmitting || isPending} />
         </div>
       </form>
     </Form>
   );
 }
+
+    
