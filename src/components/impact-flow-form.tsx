@@ -162,6 +162,11 @@ export function ImpactFlowForm() {
     } else if (state.message && !state.success) {
       form.clearErrors();
       if (state.errors) {
+        // Keep the checkbox state on server-side validation error
+        const currentTerms = form.getValues('terms');
+        form.reset(form.getValues()); // Keep form values
+        form.setValue('terms', currentTerms);
+
         for (const [key, value] of Object.entries(state.errors)) {
           if (value && value.length > 0) {
             form.setError(key as keyof FormValues, {
@@ -454,3 +459,5 @@ export function ImpactFlowForm() {
     </Form>
   );
 }
+
+    
