@@ -307,7 +307,7 @@ export function ImpactFlowForm() {
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a sector" />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="education">Education</SelectItem>
@@ -428,15 +428,9 @@ export function ImpactFlowForm() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Terms and Conditions</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Please read these terms and conditions carefully before submitting your application.
+                            Mastery Hub of Rwanda will do its best to keep the confidentiality of submitted projects and ideas. All reasonable measures will be taken to avoid unauthorized sharing or theft.
                             <br /><br />
-                            1. Eligibility: The competition is open to all individuals who are at least 18 years old.
-                            <br /><br />
-                            2. Submission: All submissions must be original work of the entrants.
-                            <br /><br />
-                            3. Judging: The projects will be judged by a panel of experts. The decision of the judges is final.
-                            <br /><br />
-                            By clicking "Accept" you agree to these terms and conditions.
+                            However, we cannot guarantee 100% protection. If your project is highly sensitive or groundbreaking, it is your responsibility to register or protect it legally through RDB or an appropriate institution before submission.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -461,5 +455,3 @@ export function ImpactFlowForm() {
     </Form>
   );
 }
-
-    
