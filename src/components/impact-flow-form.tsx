@@ -2,8 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -105,17 +104,15 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-
+function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
   return (
     <Button
       type="submit"
       size="lg"
       className="w-full font-headline bg-accent hover:bg-accent/90 text-accent-foreground"
-      disabled={pending}
+      disabled={isSubmitting}
     >
-      {pending ? (
+      {isSubmitting ? (
         <>
           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           Submitting...
@@ -131,13 +128,13 @@ export function ImpactFlowForm() {
   const { toast } = useToast();
   const [submitted, setSubmitted] = React.useState(false);
 
-  const [state, formAction] = useActionState(submitApplication, {
+  const [state, formAction] = useFormState(submitApplication, {
     message: '',
     success: false,
     errors: {},
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
@@ -154,6 +151,11 @@ export function ImpactFlowForm() {
       terms: undefined,
     },
   });
+
+  const {
+    formState: { isSubmitting },
+    handleSubmit,
+  } = form;
 
   React.useEffect(() => {
     if (state.success) {
@@ -189,6 +191,19 @@ export function ImpactFlowForm() {
 
   const fileRef = form.register('conceptNote');
 
+  const onSubmit = (data: FormValues) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+        if (key === 'conceptNote') {
+            formData.append(key, value[0]);
+        } else if (value !== undefined && value !== null) {
+            formData.append(key, value as string);
+        }
+    });
+    formAction(formData);
+  };
+
+
   if (submitted) {
     return (
       <Card className="w-full max-w-2xl mx-auto shadow-lg">
@@ -210,7 +225,7 @@ export function ImpactFlowForm() {
   return (
     <Form {...form}>
       <form
-        action={formAction}
+        onSubmit={handleSubmit(onSubmit)}
         className="space-y-6"
       >
         <Card className="shadow-lg">
@@ -450,9 +465,10 @@ export function ImpactFlowForm() {
             )}
           />
 
-          <SubmitButton />
+          <SubmitButton isSubmitting={isSubmitting} />
         </div>
       </form>
     </Form>
   );
-}
+
+    
