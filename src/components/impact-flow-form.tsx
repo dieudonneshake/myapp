@@ -553,7 +553,7 @@ export function ImpactFlowForm() {
                             </FormControl>
                             <SelectContent>
                                {countryCodes.map((country) => (
-                                <SelectItem key={country.value} value={country.value}>
+                                <SelectItem key={country.label} value={country.value}>
                                     {country.label}
                                 </SelectItem>
                                ))}
