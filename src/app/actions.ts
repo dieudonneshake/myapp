@@ -3,6 +3,7 @@
 
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
+import 'dotenv/config';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = [
@@ -80,17 +81,23 @@ export async function submitApplication(
 
   const data = validatedFields.data;
 
-  try {
-    // Create a test account for development
-    const testAccount = await nodemailer.createTestAccount();
+  // Check for environment variables
+  if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error("Missing required SMTP environment variables.");
+      return {
+          message: "The server is not configured to send emails. Please contact the administrator.",
+          success: false,
+      };
+  }
 
+  try {
     const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false, // true for 465, false for other ports
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT, 10),
+      secure: parseInt(process.env.SMTP_PORT, 10) === 465, // true for 465, false for other ports
       auth: {
-        user: testAccount.user, // generated ethereal user
-        pass: testAccount.pass, // generated ethereal password
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
     });
 
@@ -99,8 +106,8 @@ export async function submitApplication(
 
     // --- Email to Admin ---
     const adminMailInfo = await transporter.sendMail({
-      from: `"Code for Impact" <${testAccount.user}>`,
-      to: 'info@masteryhub.co.rw', // The recipient will be overridden by Ethereal for testing
+      from: `"Code for Impact" <${process.env.SMTP_USER}>`,
+      to: 'info@masteryhub.co.rw',
       subject: `New Project Application: ${data.projectName}`,
       html: `
         <h1>New Project Application</h1>
@@ -135,11 +142,10 @@ export async function submitApplication(
     });
 
     console.log('Admin notification sent: %s', adminMailInfo.messageId);
-    console.log('Preview URL for Admin Email: %s', nodemailer.getTestMessageUrl(adminMailInfo));
 
     // --- Confirmation Email to Applicant ---
     const confirmationMailInfo = await transporter.sendMail({
-      from: `"Code for Impact" <${testAccount.user}>`,
+      from: `"Code for Impact" <${process.env.SMTP_USER}>`,
       to: data.email, // Send to the person who filled out the form
       subject: `Thank you for your submission to Code for Impact!`,
       html: `
@@ -152,7 +158,6 @@ export async function submitApplication(
     });
     
     console.log('Confirmation email sent: %s', confirmationMailInfo.messageId);
-    console.log('Preview URL for Confirmation Email: %s', nodemailer.getTestMessageUrl(confirmationMailInfo));
 
 
     return {
