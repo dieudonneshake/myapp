@@ -207,24 +207,10 @@ export function ImpactFlowForm() {
     );
   }
 
-  const onSubmit = (data: FormValues) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (key === 'conceptNote') {
-        if (value instanceof FileList && value.length > 0) {
-          formData.append(key, value[0]);
-        }
-      } else if (value !== null && value !== undefined) {
-        formData.append(key, value as string);
-      }
-    });
-    formAction(formData);
-  };
-
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        action={formAction}
         className="space-y-6"
       >
         <Card className="shadow-lg">
