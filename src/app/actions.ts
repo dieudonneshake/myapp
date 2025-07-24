@@ -1,6 +1,7 @@
 'use server';
 
 import { z } from 'zod';
+import nodemailer from 'nodemailer';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = [
@@ -78,29 +79,68 @@ export async function submitApplication(
 
   const data = validatedFields.data;
 
-  // In a real application, you would use a service like Resend, Nodemailer, or an API to send the email.
-  console.log('--- Simulating Email Submission ---');
-  console.log('To: info@masteryhub.co.rw');
-  console.log('Subject: New Project Application:', data.projectName);
-  console.log('--- Applicant Details ---');
-  console.log('Name:', data.name);
-  console.log('Email:', data.email);
-  console.log('Phone:', data.phone || 'N/A');
-  console.log('Company:', data.company || 'N/A');
-  console.log('--- Project Details ---');
-  console.log('Project Name:', data.projectName);
-  console.log('Sector:', data.sector);
-  console.log('--- Attached File ---');
-  console.log('File Name:', data.conceptNote.name);
-  console.log('File Type:', data.conceptNote.type);
-  console.log('File Size:', `${(data.conceptNote.size / 1024).toFixed(2)} KB`);
-  console.log('---------------------------------');
+  // Setup Nodemailer transporter
+  // IMPORTANT: You need to configure your email provider details.
+  // For development, you can use a service like Ethereal (https://ethereal.email/)
+  // For production, use a transactional email service (e.g., SendGrid, Mailgun) or your own SMTP server.
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com', // Replace with your SMTP host
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: 'your_email@gmail.com', // Replace with your email
+      pass: process.env.EMAIL_PASS, // Replace with your email password or app-specific password
+    },
+  });
 
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  const conceptNoteBuffer = Buffer.from(await data.conceptNote.arrayBuffer());
 
-  return {
-    message: 'Application submitted successfully!',
-    success: true,
-  };
+  try {
+    await transporter.sendMail({
+      from: `"Code for Impact" <your_email@gmail.com>`, // Replace with your sender name and email
+      to: 'info@masteryhub.co.rw',
+      subject: `New Project Application: ${data.projectName}`,
+      html: `
+        <h1>New Project Application</h1>
+        <h2>Applicant Details</h2>
+        <ul>
+          <li><strong>Name:</strong> ${data.name}</li>
+          <li><strong>Email:</strong> ${data.email}</li>
+          <li><strong>Phone:</strong> ${data.phone || 'N/A'}</li>
+          <li><strong>Company:</strong> ${data.company || 'N/A'}</li>
+        </ul>
+        <h2>Project Details</h2>
+        <ul>
+          <li><strong>Project Name:</strong> ${data.projectName}</li>
+          <li><strong>Sector:</strong> ${data.sector}</li>
+        </ul>
+        <h3>Project Explanation</h3>
+        <p>${data.explanation}</p>
+        <h3>Social/Environmental Impact</h3>
+        <p>${data.impact}</p>
+        <h3>Differentiation</h3>
+        <p>${data.differentiation}</p>
+        <h3>Innovation</h3>
+        <p>${data.innovation}</p>
+      `,
+      attachments: [
+        {
+          filename: data.conceptNote.name,
+          content: conceptNoteBuffer,
+          contentType: data.conceptNote.type,
+        },
+      ],
+    });
+
+    return {
+      message: 'Application submitted successfully!',
+      success: true,
+    };
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    return {
+      message: 'Sorry, we were unable to submit your application at this time. Please try again later.',
+      success: false,
+    };
+  }
 }
