@@ -9,6 +9,7 @@ const ACCEPTED_FILE_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ];
 
+// Updated schema to handle FormData directly
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
   email: z.string().email('Invalid email address.'),
@@ -23,8 +24,8 @@ const formSchema = z.object({
     .min(1, 'Differentiation from existing solutions is required.'),
   innovation: z.string().min(1, 'Innovation aspect is required.'),
   conceptNote: z
-    .instanceof(File, { message: 'Concept note is required.' })
-    .refine((file) => file.size > 0, 'Concept note cannot be empty.')
+    .any()
+    .refine((file): file is File => file instanceof File && file.size > 0, 'Concept note is required.')
     .refine(
       (file) => file.size <= MAX_FILE_SIZE,
       `Max file size is 5MB.`
@@ -33,16 +34,17 @@ const formSchema = z.object({
       (file) => ACCEPTED_FILE_TYPES.includes(file.type),
       '.pdf, .doc, and .docx files are accepted.'
     ),
-  terms: z.literal('true', {
-    errorMap: () => ({
-      message: 'You must agree to the terms and conditions.',
-    }),
+  terms: z.string().refine((val) => val === 'true', {
+    message: 'You must agree to the terms and conditions.',
   }),
 });
 
 export type FormState = {
   message: string;
   success: boolean;
+  errors?: {
+    [key: string]: string[] | undefined;
+  };
 };
 
 export async function submitApplication(
@@ -65,12 +67,12 @@ export async function submitApplication(
   });
 
   if (!validatedFields.success) {
-    console.error('Server-side validation failed:', validatedFields.error.flatten());
-    // Concatenate all errors for a single toast message
-    const errorMessages = Object.values(validatedFields.error.flatten().fieldErrors).flat().join(' ');
+    const errorMessages = validatedFields.error.flatten().fieldErrors;
+    console.error('Server-side validation failed:', errorMessages);
     return {
-      message: errorMessages || "There was a problem with your submission. Please check the form and try again.",
+      message: "There was a problem with your submission. Please check the form and try again.",
       success: false,
+      errors: errorMessages,
     };
   }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,8 +11,6 @@ import {
   Phone,
   Building2,
   Lightbulb,
-  Briefcase,
-  FileText,
   Paperclip,
   Loader2,
   PartyPopper,
@@ -52,7 +51,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = [
@@ -105,10 +103,38 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button
+      type="submit"
+      size="lg"
+      className="w-full font-headline bg-accent hover:bg-accent/90 text-accent-foreground"
+      disabled={pending}
+    >
+      {pending ? (
+        <>
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+          Submitting...
+        </>
+      ) : (
+        'Submit Application'
+      )}
+    </Button>
+  );
+}
+
 export function ImpactFlowForm() {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
+  const formRef = React.useRef<HTMLFormElement>(null);
+  
+  const [state, formAction] = useFormState(submitApplication, {
+    message: '',
+    success: false,
+    errors: {},
+  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -126,35 +152,37 @@ export function ImpactFlowForm() {
       conceptNote: undefined,
       terms: false,
     },
+    errors: state.errors,
   });
 
-  const termsValue = form.watch('terms');
-  const fileRef = form.register('conceptNote');
-
-  async function onSubmit(values: FormValues) {
-    setIsSubmitting(true);
-    const formData = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      if (key === 'conceptNote' && value instanceof FileList) {
-        formData.append(key, value[0]);
-      } else if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    });
-
-    const result = await submitApplication({ success: false, message: '' }, formData);
-    setIsSubmitting(false);
-
-    if (result.success) {
+  React.useEffect(() => {
+    if (state.success) {
       setSubmitted(true);
-    } else {
+      form.reset();
+    } else if (state.message && !state.success) {
+      // Clear previous errors
+      form.clearErrors();
+      // Set new errors from the server
+      if (state.errors) {
+        for (const [key, value] of Object.entries(state.errors)) {
+          if (value && value.length > 0) {
+            form.setError(key as keyof FormValues, {
+              type: 'server',
+              message: value.join(', '),
+            });
+          }
+        }
+      }
       toast({
         variant: 'destructive',
         title: 'Submission Failed',
-        description: result.message,
+        description: state.message,
       });
     }
-  }
+  }, [state, form, toast]);
+
+
+  const fileRef = form.register('conceptNote');
 
   if (submitted) {
     return (
@@ -168,6 +196,7 @@ export function ImpactFlowForm() {
             Your application has been submitted successfully. We will review your
             project and get back to you soon.
           </p>
+            <Button onClick={() => setSubmitted(false)} className="mt-4 mx-auto block">Submit Another</Button>
         </CardContent>
       </Card>
     );
@@ -175,7 +204,7 @@ export function ImpactFlowForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form ref={formRef} action={formAction} className="space-y-6">
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="font-headline text-2xl flex items-center gap-2">
@@ -369,15 +398,15 @@ export function ImpactFlowForm() {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                 <FormControl>
-                  <Checkbox
+                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
-                    className="hidden"
+                    name={field.name}
                   />
                 </FormControl>
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline">View Terms and Conditions</Button>
+                      <Button variant="link" type="button">View Terms and Conditions</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
@@ -396,13 +425,15 @@ export function ImpactFlowForm() {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => field.onChange(true)}>Accept</AlertDialogAction>
+                        <AlertDialogAction onClick={() => {
+                          form.setValue('terms', true, { shouldValidate: true });
+                        }}>Accept</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 <div className="space-y-1 leading-none">
-                  <FormLabel className={field.value ? 'text-green-600' : ''}>
-                    {field.value ? 'You have agreed to the terms and conditions.' : 'You must agree to the terms and conditions *'}
+                  <FormLabel>
+                    I agree to the terms and conditions *
                   </FormLabel>
                   <FormMessage/>
                 </div>
@@ -410,21 +441,7 @@ export function ImpactFlowForm() {
             )}
           />
 
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full font-headline bg-accent hover:bg-accent/90 text-accent-foreground"
-            disabled={!termsValue || isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              'Submit Application'
-            )}
-          </Button>
+          <SubmitButton />
         </div>
       </form>
     </Form>
