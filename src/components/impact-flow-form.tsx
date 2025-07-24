@@ -552,8 +552,8 @@ export function ImpactFlowForm() {
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                               {countryCodes.map((country) => (
-                                <SelectItem key={country.label} value={country.value}>
+                               {countryCodes.map((country, index) => (
+                                <SelectItem key={index} value={country.value}>
                                     {country.label}
                                 </SelectItem>
                                ))}
