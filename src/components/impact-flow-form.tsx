@@ -130,7 +130,7 @@ function SubmitButton() {
 export function ImpactFlowForm() {
   const { toast } = useToast();
   const [submitted, setSubmitted] = React.useState(false);
-  
+
   const [state, formAction] = useActionState(submitApplication, {
     message: '',
     success: false,
@@ -163,9 +163,7 @@ export function ImpactFlowForm() {
       form.clearErrors();
       if (state.errors) {
         // Keep the checkbox state on server-side validation error
-        const currentTerms = form.getValues('terms');
-        form.reset(form.getValues()); // Keep form values
-        form.setValue('terms', currentTerms);
+        const currentValues = form.getValues();
 
         for (const [key, value] of Object.entries(state.errors)) {
           if (value && value.length > 0) {
@@ -175,6 +173,9 @@ export function ImpactFlowForm() {
             });
           }
         }
+        // Restore values after setting errors
+        form.reset(currentValues);
+
       } else {
         toast({
             variant: 'destructive',
@@ -208,9 +209,20 @@ export function ImpactFlowForm() {
 
   return (
     <Form {...form}>
-      <form 
-        action={formAction} 
+      <form
+        action={formAction}
         className="space-y-6"
+        onSubmit={form.handleSubmit((data) => {
+          const formData = new FormData();
+          Object.keys(data).forEach(key => {
+            if (key === 'conceptNote') {
+              formData.append(key, data[key][0]);
+            } else {
+              formData.append(key, (data as any)[key]);
+            }
+          });
+          formAction(formData);
+        })}
       >
         <Card className="shadow-lg">
           <CardHeader>
@@ -307,7 +319,7 @@ export function ImpactFlowForm() {
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a sector" />
-                        </Trigger>
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="education">Education</SelectItem>
