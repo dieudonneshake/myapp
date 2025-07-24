@@ -504,7 +504,7 @@ export function ImpactFlowForm() {
   return (
     <Form {...form}>
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-6"
       >
         <Card className="shadow-lg">
