@@ -165,10 +165,12 @@ export async function submitApplication(
       message: 'Application submitted successfully!',
       success: true,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to send email:', error);
+    // Return a more specific error message to the client
+    const errorMessage = error.response || error.message || 'An unknown error occurred.';
     return {
-      message: 'Sorry, we were unable to submit your application at this time. Please try again later.',
+      message: `Sorry, we were unable to submit your application. Server says: ${errorMessage}`,
       success: false,
     };
   }
