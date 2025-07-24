@@ -1,7 +1,9 @@
+
 'use client';
 
 import * as React from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -130,7 +132,7 @@ export function ImpactFlowForm() {
   const [submitted, setSubmitted] = React.useState(false);
   const formRef = React.useRef<HTMLFormElement>(null);
   
-  const [state, formAction] = useFormState(submitApplication, {
+  const [state, formAction] = useActionState(submitApplication, {
     message: '',
     success: false,
     errors: {},
