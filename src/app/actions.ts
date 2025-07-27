@@ -109,6 +109,7 @@ export async function submitApplication(
     const adminMailInfo = await transporter.sendMail({
       from: `"Code for Impact" <${process.env.SMTP_USER}>`,
       to: 'info@masteryhub.co.rw',
+      replyTo: data.email,
       subject: `New Project Application: ${data.projectName}`,
       html: `
         <h1>New Project Application</h1>
