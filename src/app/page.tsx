@@ -13,7 +13,7 @@ export default function Home() {
         <div className="mb-8 p-6 rounded-lg bg-card border border-border shadow-sm">
           <h2 className="font-headline text-2xl font-bold text-primary mb-4">🌍 Code for Impact Competition – Application Portal</h2>
           <p className="mb-4 text-card-foreground">
-            Welcome to the official application portal for the Code for Impact Competition, an initiative proudly organized by Mastery Hub of Rwanda in collaboration with ALX Africa, the One Million Rwandan Coders Initiative, and the Ministry of ICT and Innovation.
+            Welcome to the official application portal for the Code for Impact Competition, an initiative proudly organized by Mastery Hub of Rwanda in collaboration with ALX, the One Million Rwandan Coders Initiative.
           </p>
           <p className="mb-4 text-card-foreground">
             This competition aims to empower Rwandan youth, fresh graduates, innovators, and change-makers to design and build impact-driven tech solutions that respond to the real challenges faced in Rwanda and beyond. Whether you are tackling problems in education, health, agriculture, governance, AI, business, communication, or transport, we believe in your potential to bring positive change through innovation.
