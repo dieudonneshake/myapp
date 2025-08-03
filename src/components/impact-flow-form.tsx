@@ -2,7 +2,6 @@
 'use client';
 
 import * as React from 'react';
-import { useActionState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,7 +16,6 @@ import {
   PartyPopper,
 } from 'lucide-react';
 
-import { submitApplication, type FormState } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
@@ -387,14 +385,8 @@ function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
 
 export function ImpactFlowForm() {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
-  const [isPending, startTransition] = useTransition();
-
-  const [state, formAction] = useActionState(submitApplication, {
-    message: '',
-    success: false,
-    errors: {},
-  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -415,50 +407,15 @@ export function ImpactFlowForm() {
     },
   });
 
-  const {
-    formState: { isSubmitting },
-    handleSubmit,
-  } = form;
-
-  React.useEffect(() => {
-    if (state.success) {
-      setSubmitted(true);
-      form.reset();
-    } else if (state.message && !state.success) {
-      form.clearErrors();
-      if (state.errors) {
-        // Keep the checkbox state on server-side validation error
-        const currentValues = form.getValues();
-
-        for (const [key, value] of Object.entries(state.errors)) {
-          if (value && value.length > 0) {
-            form.setError(key as keyof FormValues, {
-              type: 'server',
-              message: value.join(', '),
-            });
-          }
-        }
-        // Restore values after setting errors
-        form.reset(currentValues);
-
-      } else {
-        toast({
-            variant: 'destructive',
-            title: 'Submission Failed',
-            description: state.message,
-        });
-      }
-    }
-  }, [state, form, toast]);
-
-
   const fileRef = form.register('conceptNote');
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
+    form.clearErrors();
+
     const formData = new FormData();
     const { countryCode, phoneNumber, ...restOfData } = data;
 
-    // Combine country code and phone number
     const fullPhoneNumber = (countryCode && phoneNumber) ? `${countryCode}${phoneNumber}` : '';
 
     const submissionData: Record<string, any> = {
@@ -466,18 +423,52 @@ export function ImpactFlowForm() {
       phone: fullPhoneNumber,
     };
 
-
     Object.entries(submissionData).forEach(([key, value]) => {
         if (key === 'conceptNote' && value?.[0]) {
             formData.append(key, value[0]);
         } else if (value !== undefined && value !== null && value !== '') {
-            formData.append(key, value as string);
+            formData.append(key, String(value));
         }
     });
 
-    startTransition(() => {
-      formAction(formData);
-    });
+    try {
+      const response = await fetch('/api/submit', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (result.errors) {
+            for (const [key, value] of Object.entries(result.errors)) {
+                if (value && Array.isArray(value) && value.length > 0) {
+                    form.setError(key as keyof FormValues, {
+                        type: 'server',
+                        message: value.join(', '),
+                    });
+                }
+            }
+        }
+        toast({
+            variant: 'destructive',
+            title: 'Submission Failed',
+            description: result.message || "An unexpected error occurred.",
+        });
+      } else {
+        setSubmitted(true);
+        form.reset();
+      }
+    } catch (error) {
+      console.error("Submission fetch error:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Submission Failed',
+        description: 'Could not connect to the server. Please check your network and try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 
@@ -788,11 +779,9 @@ export function ImpactFlowForm() {
             )}
           />
 
-          <SubmitButton isSubmitting={isSubmitting || isPending} />
+          <SubmitButton isSubmitting={isSubmitting} />
         </div>
       </form>
     </Form>
   );
 }
-
-    
