@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
-import 'dotenv/config';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = [
