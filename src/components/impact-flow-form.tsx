@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -306,10 +307,7 @@ const countryCodes = [
   { "value": "+263", "label": "Zimbabwe (+263)" }
 ];
 
-const uniqueCountryCodes = Array.from(new Set(countryCodes.map(c => c.label)))
-  .map(label => {
-    return countryCodes.find(c => c.label === label)!;
-  });
+const uniqueCountryCodes = Array.from(new Map(countryCodes.map(country => [country.label, country])).values());
 
 
 const formSchema = z.object({
@@ -796,3 +794,5 @@ export function ImpactFlowForm() {
     </Form>
   );
 }
+
+    
