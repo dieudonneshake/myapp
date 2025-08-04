@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Code for Impact',
-  description: 'Application portal for impactful projects.',
+  description: 'Application portal for The Code For Impact Competition.',
 };
 
 export default function RootLayout({
