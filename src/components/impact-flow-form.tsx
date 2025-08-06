@@ -387,6 +387,7 @@ export function ImpactFlowForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
+  const [termsAccepted, setTermsAccepted] = React.useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -458,6 +459,7 @@ export function ImpactFlowForm() {
       } else {
         setSubmitted(true);
         form.reset();
+        setTermsAccepted(false);
       }
     } catch (error) {
       console.error("Submission fetch error:", error);
@@ -712,72 +714,73 @@ export function ImpactFlowForm() {
         </Card>
 
         <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="terms"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                   <Checkbox
-                    checked={field.value === 'on'}
-                    onCheckedChange={(checked) => {
-                      return field.onChange(checked ? 'on' : 'off');
-                    }}
-                    name={field.name}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <div className="flex items-center gap-1">
-                     <FormLabel className="font-normal">
-                      I have read and understood the{" "}
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                           <Button variant="link" type="button" className="p-0 h-auto text-base align-baseline">Terms and Conditions</Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Terms and Conditions for Submission</AlertDialogTitle>
-                            <AlertDialogDescription className="text-left max-h-[60vh] overflow-y-auto">
-                              By submitting your application to the Code for Impact Competition organized by Mastery Hub of Rwanda, you agree to the following terms and conditions:
-                              <br/><br/>
-                              <strong className="font-bold text-foreground">Confidentiality Commitment</strong><br/>
-                              We understand the importance of protecting your ideas and innovations. Mastery Hub of Rwanda is committed to treating all submitted information — including your project concept, documents, and personal/business details — with the highest degree of confidentiality. We will not intentionally share, distribute, or disclose your information to any unauthorized third party.
-                              <br/><br/>
-                               <strong className="font-bold text-foreground">Non-Disclosure and Good Faith Handling</strong><br/>
-                              All submissions will be accessed only by authorized reviewers and stakeholders involved in the competition's evaluation and coordination process. We will handle your information responsibly and in good faith, ensuring it is only used for the purposes of this competition.
-                              <br/><br/>
-                               <strong className="font-bold text-foreground">No Guarantee of Absolute Protection</strong><br/>
-                              While we will do our best to maintain the confidentiality of your project, we cannot guarantee 100% protection of your intellectual property. The nature of open competitions involves some level of risk, and although minimal, it is not entirely avoidable.
-                              <br/><br/>
-                               <strong className="font-bold text-foreground">Your Responsibility to Protect High-Value Intellectual Property</strong><br/>
-                              If you believe that your idea, innovation, or project holds significant commercial value or uniqueness, we strongly recommend that you formally register or protect it through the Rwanda Development Board (RDB) or any recognized intellectual property protection agency before submitting it to this competition.
-                               <br/><br/>
-                               <strong className="font-bold text-foreground">Applicant Accountability</strong><br/>
-                              You, the applicant, are fully responsible for ensuring that your submission does not infringe on any third-party rights, and that you are authorized to submit the idea, especially if it involves other stakeholders or team members.
-                               <br/><br/>
-                               <strong className="font-bold text-foreground">Right to Use Submitted Content for Judging and Communication</strong><br/>
-                              By submitting your project, you grant Mastery Hub of Rwanda permission to internally use the information strictly for evaluating your eligibility, judging, communicating with you, and if selected, for non-confidential promotional purposes (with your consent).
-                               <br/><br/>
-                               <strong className="font-bold text-foreground">Disqualification Clause</strong><br/>
-                              Any submission that violates these terms or is found to contain plagiarized or fraudulent information may be disqualified from the competition.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => {
-                              form.setValue('terms', 'on', { shouldValidate: true });
-                            }}>Accept</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                      . "I have read and understood the Terms and Conditions. I agree to allow Mastery Hub of Rwanda to process and evaluate my submission under the above guidelines. I understand that while all reasonable efforts will be made to protect my intellectual property, full protection cannot be guaranteed, and I am responsible for registering sensitive projects with RDB before submitting." *
+           <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="w-full">Read and Accept Terms & Conditions</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Terms and Conditions for Submission</AlertDialogTitle>
+                <AlertDialogDescription className="text-left max-h-[60vh] overflow-y-auto">
+                  By submitting your application to the Code for Impact Competition organized by Mastery Hub of Rwanda, you agree to the following terms and conditions:
+                  <br/><br/>
+                  <strong className="font-bold text-foreground">Confidentiality Commitment</strong><br/>
+                  We understand the importance of protecting your ideas and innovations. Mastery Hub of Rwanda is committed to treating all submitted information — including your project concept, documents, and personal/business details — with the highest degree of confidentiality. We will not intentionally share, distribute, or disclose your information to any unauthorized third party.
+                  <br/><br/>
+                   <strong className="font-bold text-foreground">Non-Disclosure and Good Faith Handling</strong><br/>
+                  All submissions will be accessed only by authorized reviewers and stakeholders involved in the competition's evaluation and coordination process. We will handle your information responsibly and in good faith, ensuring it is only used for the purposes of this competition.
+                  <br/><br/>
+                   <strong className="font-bold text-foreground">No Guarantee of Absolute Protection</strong><br/>
+                  While we will do our best to maintain the confidentiality of your project, we cannot guarantee 100% protection of your intellectual property. The nature of open competitions involves some level of risk, and although minimal, it is not entirely avoidable.
+                  <br/><br/>
+                   <strong className="font-bold text-foreground">Your Responsibility to Protect High-Value Intellectual Property</strong><br/>
+                  If you believe that your idea, innovation, or project holds significant commercial value or uniqueness, we strongly recommend that you formally register or protect it through the Rwanda Development Board (RDB) or any recognized intellectual property protection agency before submitting it to this competition.
+                   <br/><br/>
+                   <strong className="font-bold text-foreground">Applicant Accountability</strong><br/>
+                  You, the applicant, are fully responsible for ensuring that your submission does not infringe on any third-party rights, and that you are authorized to submit the idea, especially if it involves other stakeholders or team members.
+                   <br/><br/>
+                   <strong className="font-bold text-foreground">Right to Use Submitted Content for Judging and Communication</strong><br/>
+                  By submitting your project, you grant Mastery Hub of Rwanda permission to internally use the information strictly for evaluating your eligibility, judging, and communicating with you. Our partners, especially ALX, will be allowed to contact the applicants after the event for further interests. If selected, we may also use non-confidential information for promotional purposes (with your consent).
+                   <br/><br/>
+                   <strong className="font-bold text-foreground">Disqualification Clause</strong><br/>
+                  Any submission that violates these terms or is found to contain plagiarized or fraudulent information may be disqualified from the competition.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Close</AlertDialogCancel>
+                <AlertDialogAction onClick={() => {
+                  setTermsAccepted(true);
+                  form.setValue('terms', 'on', { shouldValidate: true });
+                }}>Accept</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          
+          {termsAccepted && (
+            <FormField
+              control={form.control}
+              name="terms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value === 'on'}
+                      onCheckedChange={(checked) => {
+                        return field.onChange(checked ? 'on' : 'off');
+                      }}
+                      name={field.name}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      I have read, understood, and agree to the Terms and Conditions.
                     </FormLabel>
+                    <FormMessage />
                   </div>
-                  <FormMessage/>
-                </div>
-              </FormItem>
-            )}
-          />
+                </FormItem>
+              )}
+            />
+          )}
 
           <SubmitButton isSubmitting={isSubmitting} />
         </div>
@@ -785,4 +788,3 @@ export function ImpactFlowForm() {
     </Form>
   );
 }
-
